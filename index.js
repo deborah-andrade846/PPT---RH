@@ -2,6 +2,17 @@ const pptxgen = require("pptxgenjs");
 const React = require("react");
 const ReactDOMServer = require("react-dom/server");
 const path = require("path");
+const fs = require("fs");
+
+// Insere uma imagem apenas se o arquivo existir (evita quebrar a geração
+// caso um logo/asset esteja ausente no ambiente).
+function safeAddImage(target, imgPath, opts) {
+  if (imgPath && fs.existsSync(imgPath)) {
+    target.addImage({ path: imgPath, ...opts });
+  } else {
+    console.warn("Aviso: imagem não encontrada, ignorando:", imgPath);
+  }
+}
 
 // PALETA de cores (mantida)
 const C = {
@@ -45,8 +56,8 @@ function addSlideFooter(slide) {
     x: 0, y: 5.35, w: 10, h: 0.03,
     fill: { color: C.coral }, line: { color: C.coral }
   });
-  slide.addImage({ path: AURA_LOGO,  x: 0.3,  y: 5.2, w: 0.9, h: 0.33 });
-  slide.addImage({ path: INOVA_LOGO, x: 8.75, y: 5.17, w: 0.95, h: 0.37 });
+  safeAddImage(slide, AURA_LOGO,  { x: 0.3,  y: 5.2, w: 0.9, h: 0.33 });
+  safeAddImage(slide, INOVA_LOGO, { x: 8.75, y: 5.17, w: 0.95, h: 0.37 });
 }
 
 function addSlideHeader(slide, label = "APOENA") {
@@ -95,8 +106,8 @@ async function build() {
     }
 
     s.addText("Déborah Gonçalves  ·  Célula de Gestão de Contratos  ·  Aura Minerals — Apoena  ·  GAFI  ·  Gestor: Cleisson Bento", { x: 0.5, y: 4.45, w: 9.0, h: 0.3, fontSize: 9, color: "7A8BAE", fontFace: "Calibri" });
-    s.addImage({ path: AURA_LOGO, x: 0.4, y: 4.9, w: 1.1, h: 0.4 });
-    s.addImage({ path: INOVA_LOGO, x: 8.7, y: 4.87, w: 0.9, h: 0.36 });
+    safeAddImage(s, AURA_LOGO, { x: 0.4, y: 4.9, w: 1.1, h: 0.4 });
+    safeAddImage(s, INOVA_LOGO, { x: 8.7, y: 4.87, w: 0.9, h: 0.36 });
   }
 
   // ----------------------- SLIDE 2 - PROBLEMA x SOLUÇÃO ----------------------- //
@@ -333,8 +344,8 @@ async function build() {
       { text: "Proponente · Extrator de Relatórios — Apoena\n", options: { fontSize: 10, color: "A0AABB" } },
       { text: "Célula de Gestão de Contratos  ·  GAFI  ·  Aura Minerals", options: { fontSize: 9.5, color: "6A7A8A" } }
     ], { x: 0.8, y: 3.98, w: 5.1, h: 1.05, valign: "middle" });
-    s.addImage({ path: AURA_LOGO, x: 0.5, y: 5.15, w: 1.2, h: 0.44 });
-    s.addImage({ path: INOVA_LOGO, x: 8.5, y: 5.12, w: 1.1, h: 0.44 });
+    safeAddImage(s, AURA_LOGO, { x: 0.5, y: 5.15, w: 1.2, h: 0.44 });
+    safeAddImage(s, INOVA_LOGO, { x: 8.5, y: 5.12, w: 1.1, h: 0.44 });
     s.addShape("rect", { x: 0, y: 5.35, w: 10, h: 0.03, fill: { color: C.coral } });
   }
 
@@ -608,8 +619,22 @@ async function buildRecrutamento() {
 }
 
 async function main() {
-  await build();
-  await buildRecrutamento();
+  // Gera cada apresentação de forma independente: uma falha (ex.: asset
+  // ausente) não impede a geração da outra.
+  const jobs = [
+    ["Fluxo de Recrutamento e Seleção", buildRecrutamento],
+    ["Storytech — Extrator (Apoena)", build],
+  ];
+  let failures = 0;
+  for (const [nome, fn] of jobs) {
+    try {
+      await fn();
+    } catch (e) {
+      failures++;
+      console.error(`Falha ao gerar "${nome}":`, e.message);
+    }
+  }
+  if (failures === jobs.length) process.exit(1);
 }
 
-main().catch(e => { console.error(e); process.exit(1); });
+main();
