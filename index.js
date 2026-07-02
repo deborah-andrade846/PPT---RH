@@ -436,11 +436,22 @@ async function buildRecrutamento() {
     s.addShape("ellipse", { x: 4.0, y: -1.6, w: 3.0, h: 3.0, fill: { color: R.tealDeep, transparency: 45 }, line: noLine });
     s.addShape("ellipse", { x: -1.2, y: 5.9, w: 2.6, h: 2.6, fill: { color: R.coralDk, transparency: 55 }, line: noLine });
 
-    // motivo gráfico de RH — Mandala aura 360 (cultura / pessoas)
-    safeAddImage(s, MANDALA, { x: 0.55, y: 1.95, w: 4.4, h: 4.4 });
-
     s.addText("RECURSOS HUMANOS", { x: 0.6, y: 0.5, w: 4.5, h: 0.4, fontSize: 12, bold: true, color: R.coral, align: "left", valign: "top", fontFace: FONT, charSpacing: 1 });
-    safeAddImage(s, AURA_W, { x: 0.6, y: 6.5, w: 1.3, h: 0.76 });
+
+    // motivo gráfico de RH — rede de pessoas (colaboradores / conexões)
+    const NET = "3E5C8A", TEAL2 = "009999", noFill = { type: "none" };
+    [[10.55, 0.6], [11.54, 0.6], [10.57, 1.59], [11.54, 1.58]].forEach(([x, y]) =>
+      s.addShape("ellipse", { x, y, w: 0.98, h: 0.98, fill: noFill, line: { color: NET, width: 1 } }));
+    s.addShape("line", { x: 11.53, y: 0.6, w: 0, h: 1.97, line: { color: NET, width: 1 } });
+    s.addShape("line", { x: 10.56, y: 1.57, w: 1.97, h: 0, line: { color: NET, width: 1 } });
+    const person = (hx, hy, bx, by, color) => {
+      s.addShape("ellipse", { x: hx, y: hy, w: 0.28, h: 0.28, fill: { color }, line: noLine });
+      s.addShape("roundRect", { x: bx, y: by, w: 0.47, h: 0.28, fill: { color }, line: noLine, rectRadius: 0.13 });
+    };
+    person(11.39, 0.16, 11.30, 0.39, R.coral);  // topo
+    person(10.36, 1.17, 10.26, 1.44, TEAL2);     // esquerda
+    person(12.59, 1.17, 12.50, 1.44, TEAL2);     // direita
+    person(11.39, 2.30, 11.31, 2.54, R.coral);   // base
 
     s.addText([
       { text: "Fluxo do Processo de", options: { fontSize: 33, bold: true, color: R.navy, breakLine: true } },
@@ -460,12 +471,12 @@ async function buildRecrutamento() {
     s.addShape("rect", { x: 0, y: 0.86, w: 13.333, h: 0.06, fill: { color: R.yellow } });
     s.addText("Fluxo Completo do Processo de Recrutamento e Seleção", { x: 0.4, y: 0, w: 8.6, h: 0.86, fontSize: 20, bold: true, color: R.white, align: "left", valign: "middle", fontFace: FONT });
     s.addText("Fluxograma executivo", { x: 9.0, y: 0, w: 2.35, h: 0.86, fontSize: 11, bold: true, color: R.coral, align: "right", valign: "middle", fontFace: FONT });
-    safeAddImage(s, AURA_W, { x: 11.95, y: 0.17, w: 0.89, h: 0.52 });
+    safeAddImage(s, AURA, { x: 0.55, y: 6.59, w: 1.35, h: 0.79 });
 
     // LANE 1 (fluxo principal)
     const LX = 0.45, LW = 3.05, cx1 = LX + LW / 2;
     stageBox(s, LX, 1.10, LW, 0.90, 1, "Requisição de Vaga", ["Origem: Portal de Serviços (HUB RH)", "Gestor solicita abertura da vaga", "Cargo · Centro de custo · Escopo · Contratação"]);
-    stageBox(s, LX, 2.18, LW, 0.86, 2, "Publicação da Vaga", ["Publicação na Pandapé", "Quintas-feiras · permanência de 7 dias", "Portal de Vagas · Aura Comunica (sexta)"]);
+    stageBox(s, LX, 2.18, LW, 0.86, 2, "Publicação da Vaga", ["Publicação na Pandapé", "Quintas-feiras · permanência de 7 dias", "Painel de Vagas · Aura Comunica (sexta)"]);
     stageBox(s, LX, 3.22, LW, 0.80, 3, "Triagem de Currículos", ["Avaliação técnica dos currículos", "Compatibilidade com os requisitos", "Seleção de candidatos aderentes"]);
     stageBox(s, LX, 4.20, LW, 0.86, 4, "Entrevista RH", ["Avaliação comportamental · histórico", "Motivação · alinhamento cultural", "Pretensão salarial"]);
     [[2.00, 2.18], [3.04, 3.22], [4.02, 4.20]].forEach(([ya, yb]) => arrow(s, cx1, ya, cx1, yb, { width: 1.8 }));
@@ -572,7 +583,7 @@ async function buildRecrutamento() {
     s.addShape("rect", { x: 0, y: 0.86, w: 13.333, h: 0.06, fill: { color: R.yellow } });
     s.addText("Visão Executiva do Processo", { x: 0.4, y: 0, w: 8.6, h: 0.86, fontSize: 20, bold: true, color: R.white, align: "left", valign: "middle", fontFace: FONT });
     s.addText("Linha do tempo — 8 etapas", { x: 9.0, y: 0, w: 2.35, h: 0.86, fontSize: 11, bold: true, color: R.coral, align: "right", valign: "middle", fontFace: FONT });
-    safeAddImage(s, AURA_W, { x: 11.95, y: 0.17, w: 0.89, h: 0.52 });
+    safeAddImage(s, AURA, { x: 11.95, y: 0.95, w: 1.35, h: 0.79 });
 
     const stages = [
       ["1", "Requisição", "Abertura da vaga pelo gestor"],
