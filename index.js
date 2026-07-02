@@ -360,14 +360,20 @@ async function build() {
 // =====================================================================
 async function buildRecrutamento() {
   const FONT = "Calibri";
-  // Paleta R&S (azul / amarelo / cinza)
+  // Paleta baseada na Mandala aura 360 (navy / coral / teal)
   const R = {
-    navy: "16305C", blue: "1F4E9B", blueMed: "2E6CC4", blueSoft: "DCE7F7",
-    bluePale: "EEF3FB", yellow: "F5B301", yellowDk: "D99400", yellowSf: "FCE9BE",
-    grayDk: "3A414C", gray: "6B7480", grayLt: "D7DCE4", grayBg: "F4F6F9",
-    white: "FFFFFF", stop: "C0504D", stopSf: "F4DAD8", green: "2E7D32",
-    greenBg: "EAF5EC",
+    navy: "22346B", navyDeep: "0E1F5D", blue: "22346B", blueMed: "34528A",
+    blueSoft: "D8ECE9", bluePale: "EAF0F7",
+    coral: "E45D4A", coralDk: "C0402F",
+    yellow: "E45D4A", yellowDk: "C0402F", yellowSf: "F7DAD3", // "amarelo" -> coral
+    teal: "1E8A80", tealDeep: "0D6665",
+    grayDk: "3A414C", gray: "5B6672", grayLt: "D7DCE4", grayBg: "F4F6F9",
+    white: "FFFFFF", stop: "B23A2E", stopSf: "F3DBD7", green: "1E8A80", // "verde" -> teal
+    greenBg: "DCEEEA",
   };
+  const MANDALA = path.join(__dirname, "rh", "mandala_wheel.png");
+  const AURA = path.join(__dirname, "rh", "aura_logo_trim.png");
+  const AURA_W = path.join(__dirname, "rh", "aura_logo_white.png");
 
   const pres = new pptxgen();
   // Layout 16:9 widescreen padrão do PowerPoint (13,333" x 7,5")
@@ -424,31 +430,26 @@ async function buildRecrutamento() {
   {
     const s = pres.addSlide();
     s.background = { color: R.white };
-    s.addShape("rect", { x: 0, y: 0, w: 4.9, h: 7.5, fill: { color: R.navy } });
-    s.addShape("rect", { x: 4.9, y: 0, w: 0.12, h: 7.5, fill: { color: R.yellow } });
-    s.addShape("ellipse", { x: 3.4, y: -1.5, w: 3.0, h: 3.0, fill: { color: R.blue }, line: noLine });
-    s.addShape("ellipse", { x: -1.0, y: 5.7, w: 2.4, h: 2.4, fill: { color: R.blueMed }, line: noLine });
+    s.addShape("rect", { x: 0, y: 0, w: 5.5, h: 7.5, fill: { color: R.navyDeep } });
+    s.addShape("rect", { x: 5.5, y: 0, w: 0.12, h: 7.5, fill: { color: R.coral } });
+    // círculos decorativos sutis (cores da mandala)
+    s.addShape("ellipse", { x: 4.0, y: -1.6, w: 3.0, h: 3.0, fill: { color: R.tealDeep, transparency: 45 }, line: noLine });
+    s.addShape("ellipse", { x: -1.2, y: 5.9, w: 2.6, h: 2.6, fill: { color: R.coralDk, transparency: 55 }, line: noLine });
 
-    // motivo gráfico de RH — rede de pessoas
-    const person = (cx, cy, scale, color) => {
-      const hd = 0.30 * scale, bw = 0.54 * scale, bh = 0.34 * scale;
-      s.addShape("ellipse", { x: cx - hd / 2, y: cy - hd / 2, w: hd, h: hd, fill: { color }, line: noLine });
-      s.addShape("roundRect", { x: cx - bw / 2, y: cy + hd / 2 - 0.02 * scale, w: bw, h: bh, fill: { color }, line: noLine, rectRadius: 0.14 * scale });
-    };
-    const nodes = [[2.45, 2.55, R.yellow, 1.25], [1.35, 3.65, R.white, 1.0], [3.55, 3.65, R.white, 1.0], [2.45, 4.75, R.blueMed, 1.05]];
-    for (let i = 0; i < nodes.length; i++)
-      for (let j = i + 1; j < nodes.length; j++)
-        arrow(s, nodes[i][0], nodes[i][1] + 0.15, nodes[j][0], nodes[j][1] + 0.15, { color: "3E5C8A", width: 1.2, head: false });
-    nodes.forEach(([cx, cy, col, sc]) => person(cx, cy, sc, col));
+    // motivo gráfico de RH — Mandala aura 360 (cultura / pessoas)
+    safeAddImage(s, MANDALA, { x: 0.55, y: 1.95, w: 4.4, h: 4.4 });
 
-    s.addText("RECURSOS HUMANOS", { x: 0.55, y: 0.55, w: 4.0, h: 0.4, fontSize: 12, bold: true, color: R.yellow, align: "left", valign: "top", fontFace: FONT, charSpacing: 1 });
+    s.addText("RECURSOS HUMANOS", { x: 0.6, y: 0.5, w: 4.5, h: 0.4, fontSize: 12, bold: true, color: R.coral, align: "left", valign: "top", fontFace: FONT, charSpacing: 1 });
+    safeAddImage(s, AURA_W, { x: 0.6, y: 6.5, w: 1.3, h: 0.76 });
+
     s.addText([
-      { text: "Fluxo do Processo de", options: { fontSize: 34, bold: true, color: R.navy, breakLine: true } },
-      { text: "Recrutamento e Seleção", options: { fontSize: 34, bold: true, color: R.blue } },
-    ], { x: 5.45, y: 2.25, w: 7.3, h: 1.9, align: "left", valign: "bottom", fontFace: FONT, lineSpacingMultiple: 1.02 });
-    s.addShape("rect", { x: 5.5, y: 4.25, w: 1.7, h: 0.06, fill: { color: R.yellow } });
-    s.addText("Etapas, aprovações, sistemas utilizados e pontos de decisão", { x: 5.45, y: 4.45, w: 7.2, h: 0.9, fontSize: 15, color: R.gray, align: "left", valign: "top", fontFace: FONT });
-    s.addText("Apresentação executiva  ·  Processo de R&S", { x: 5.45, y: 6.75, w: 7.2, h: 0.4, fontSize: 10, bold: true, color: R.gray, align: "left", valign: "top", fontFace: FONT });
+      { text: "Fluxo do Processo de", options: { fontSize: 33, bold: true, color: R.navy, breakLine: true } },
+      { text: "Recrutamento e Seleção", options: { fontSize: 33, bold: true, color: R.coral } },
+    ], { x: 6.0, y: 2.2, w: 6.9, h: 1.9, align: "left", valign: "bottom", fontFace: FONT, lineSpacingMultiple: 1.02 });
+    s.addShape("rect", { x: 6.05, y: 4.22, w: 1.7, h: 0.06, fill: { color: R.coral } });
+    s.addText("Etapas, aprovações, sistemas utilizados e pontos de decisão", { x: 6.0, y: 4.42, w: 6.7, h: 0.9, fontSize: 15, color: R.gray, align: "left", valign: "top", fontFace: FONT });
+    s.addText("Apresentação executiva  ·  Processo de R&S", { x: 6.0, y: 6.7, w: 5.0, h: 0.4, fontSize: 10, bold: true, color: R.gray, align: "left", valign: "top", fontFace: FONT });
+    safeAddImage(s, AURA, { x: 11.45, y: 6.35, w: 1.35, h: 0.79 });
   }
 
   // ---------------- SLIDE 2 — FLUXO COMPLETO ---------------- //
@@ -457,8 +458,9 @@ async function buildRecrutamento() {
     s.background = { color: R.grayBg };
     s.addShape("rect", { x: 0, y: 0, w: 13.333, h: 0.86, fill: { color: R.navy } });
     s.addShape("rect", { x: 0, y: 0.86, w: 13.333, h: 0.06, fill: { color: R.yellow } });
-    s.addText("Fluxo Completo do Processo de Recrutamento e Seleção", { x: 0.4, y: 0, w: 9.0, h: 0.86, fontSize: 20, bold: true, color: R.white, align: "left", valign: "middle", fontFace: FONT });
-    s.addText("Fluxograma executivo", { x: 9.4, y: 0, w: 3.6, h: 0.86, fontSize: 11, bold: true, color: R.yellow, align: "right", valign: "middle", fontFace: FONT });
+    s.addText("Fluxo Completo do Processo de Recrutamento e Seleção", { x: 0.4, y: 0, w: 8.6, h: 0.86, fontSize: 20, bold: true, color: R.white, align: "left", valign: "middle", fontFace: FONT });
+    s.addText("Fluxograma executivo", { x: 9.0, y: 0, w: 2.35, h: 0.86, fontSize: 11, bold: true, color: R.coral, align: "right", valign: "middle", fontFace: FONT });
+    safeAddImage(s, AURA_W, { x: 11.95, y: 0.17, w: 0.89, h: 0.52 });
 
     // LANE 1 (fluxo principal)
     const LX = 0.45, LW = 3.05, cx1 = LX + LW / 2;
@@ -479,8 +481,8 @@ async function buildRecrutamento() {
 
     // BRANCH — Triagem Patrimonial
     const PX = 3.95, PW = 2.05, pcx = PX + PW / 2;
-    s.addShape("roundRect", { x: PX, y: 1.10, w: PW, h: 0.44, fill: { color: R.yellow }, line: noLine, rectRadius: 0.10, shadow: sh() });
-    s.addText("Triagem Patrimonial", { x: PX, y: 1.10, w: PW, h: 0.44, fontSize: 10.5, bold: true, color: R.navy, align: "center", valign: "middle", fontFace: FONT });
+    s.addShape("roundRect", { x: PX, y: 1.10, w: PW, h: 0.44, fill: { color: R.teal }, line: noLine, rectRadius: 0.10, shadow: sh() });
+    s.addText("Triagem Patrimonial", { x: PX, y: 1.10, w: PW, h: 0.44, fontSize: 10.5, bold: true, color: R.white, align: "center", valign: "middle", fontFace: FONT });
     s.addText("fluxo paralelo", { x: PX, y: 1.56, w: PW, h: 0.24, fontSize: 8, italic: true, color: R.gray, align: "center", valign: "top", fontFace: FONT });
     const mini = (y, text) => {
       s.addShape("roundRect", { x: PX, y, w: PW, h: 0.46, fill: { color: R.white }, line: { color: R.grayLt, width: 0.75 }, rectRadius: 0.08, shadow: sh() });
@@ -489,12 +491,12 @@ async function buildRecrutamento() {
     mini(1.92, "Envio de Forms");
     mini(2.56, "Preenchimento pelo candidato");
     mini(3.20, "Pesquisa patrimonial");
-    arrow(s, pcx, 1.80, pcx, 1.92, { color: R.yellowDk, width: 1.6 });
-    [[2.38, 2.56], [3.02, 3.20]].forEach(([ya, yb]) => arrow(s, pcx, ya, pcx, yb, { color: R.yellowDk, width: 1.6 }));
+    arrow(s, pcx, 1.80, pcx, 1.92, { color: R.teal, width: 1.6 });
+    [[2.38, 2.56], [3.02, 3.20]].forEach(([ya, yb]) => arrow(s, pcx, ya, pcx, yb, { color: R.teal, width: 1.6 }));
 
     const pdcy = 4.25;
-    arrow(s, pcx, 3.66, pcx, pdcy - 0.42, { color: R.yellowDk, width: 1.6 });
-    diamond(s, pcx, pdcy, 1.55, 0.82, "Aprovado?", { fill: R.blueSoft, line: R.blueMed });
+    arrow(s, pcx, 3.66, pcx, pdcy - 0.42, { color: R.teal, width: 1.6 });
+    diamond(s, pcx, pdcy, 1.55, 0.82, "Aprovado?", { fill: R.blueSoft, line: R.teal, tcolor: R.tealDeep });
     ynLabel(s, pcx - 0.5, pdcy + 0.42, "Não", R.stop);
     arrow(s, pcx, pdcy + 0.41, pcx, pdcy + 0.62, { color: R.stop, width: 1.4 });
     stopNode(s, PX, pdcy + 0.62, PW, "Restrição · processo encerrado");
@@ -530,7 +532,7 @@ async function buildRecrutamento() {
     arrow(s, qcx, d2cy + 0.41, qcx, 3.22, { width: 1.8 });
     stageBox(s, QX, 4.18, QW, 0.86, 7, "Formalização & Assinatura", ["Envio por e-mail da proposta", "Assinatura eletrônica via GOV.BR", "Aceite do candidato"]);
     arrow(s, qcx, 4.02, qcx, 4.18, { width: 1.8 });
-    stageBox(s, QX, 5.22, QW, 0.90, 8, "Seleção Concluída", ["Onboarding do novo colaborador", "Integração à equipe e à empresa"], { bar: R.green, chipColor: R.green, titleColor: "1B5E20", fill: R.greenBg });
+    stageBox(s, QX, 5.22, QW, 0.90, 8, "Seleção Concluída", ["Onboarding do novo colaborador", "Integração à equipe e à empresa"], { bar: R.green, chipColor: R.green, titleColor: R.tealDeep, fill: R.greenBg });
     arrow(s, qcx, 5.04, qcx, 5.22, { color: R.green, width: 1.8 });
 
     // PAINÉIS INFORMATIVOS
@@ -545,7 +547,7 @@ async function buildRecrutamento() {
     };
     const PNX = 9.72, PNW = 3.32;
     panel(PNX, 1.10, PNW, 2.00, "SISTEMAS UTILIZADOS", ["Portal de Serviços", "Teams", "Outlook", "Pandapé", "Microsoft Forms", "GOV.BR", "Aura Comunica"], R.blue);
-    panel(PNX, 3.24, PNW, 1.86, "PONTOS DE DECISÃO", ["Aprovação da Requisição", "Aprovação RH Custos", "Aprovação Entrevista RH", "Aprovação Triagem Patrimonial", "Aprovação Gestor", "Aceite da Proposta"], R.blue);
+    panel(PNX, 3.24, PNW, 1.86, "PONTOS DE DECISÃO", ["Aprovação da Requisição", "Aprovação RH Custos", "Aprovação Entrevista RH", "Aprovação Triagem Patrimonial", "Aprovação Gestor", "Aceite da Proposta"], R.coral);
     panel(PNX, 5.24, PNW, 1.72, "POSSÍVEIS ENCERRAMENTOS", ["Reprovação na Entrevista RH", "Restrição na Triagem Patrimonial", "Reprovação pelo Gestor", "Recusa da Proposta", "Reabertura da vaga"], R.stop);
 
     // Legenda
@@ -568,8 +570,9 @@ async function buildRecrutamento() {
     s.background = { color: R.white };
     s.addShape("rect", { x: 0, y: 0, w: 13.333, h: 0.86, fill: { color: R.navy } });
     s.addShape("rect", { x: 0, y: 0.86, w: 13.333, h: 0.06, fill: { color: R.yellow } });
-    s.addText("Visão Executiva do Processo", { x: 0.4, y: 0, w: 9.5, h: 0.86, fontSize: 20, bold: true, color: R.white, align: "left", valign: "middle", fontFace: FONT });
-    s.addText("Linha do tempo — 8 etapas", { x: 9.0, y: 0, w: 4.0, h: 0.86, fontSize: 11, bold: true, color: R.yellow, align: "right", valign: "middle", fontFace: FONT });
+    s.addText("Visão Executiva do Processo", { x: 0.4, y: 0, w: 8.6, h: 0.86, fontSize: 20, bold: true, color: R.white, align: "left", valign: "middle", fontFace: FONT });
+    s.addText("Linha do tempo — 8 etapas", { x: 9.0, y: 0, w: 2.35, h: 0.86, fontSize: 11, bold: true, color: R.coral, align: "right", valign: "middle", fontFace: FONT });
+    safeAddImage(s, AURA_W, { x: 11.95, y: 0.17, w: 0.89, h: 0.52 });
 
     const stages = [
       ["1", "Requisição", "Abertura da vaga pelo gestor"],
@@ -602,7 +605,7 @@ async function buildRecrutamento() {
     s.addText("Do pedido à integração — um fluxo estruturado, auditável e orientado a decisões.", { x: 0.4, y: 5.85, w: 12.5, h: 0.4, fontSize: 12, italic: true, color: R.gray, align: "center", valign: "middle", fontFace: FONT });
 
     const indY = 6.35;
-    const indicators = [["8", "etapas principais", R.blue], ["6", "pontos de decisão", R.yellowDk], ["7", "sistemas integrados", R.blue], ["5", "possíveis encerramentos", R.stop]];
+    const indicators = [["8", "etapas principais", R.navy], ["6", "pontos de decisão", R.coral], ["7", "sistemas integrados", R.teal], ["5", "possíveis encerramentos", R.stop]];
     const iw = 2.85, gap = (13.333 - iw * indicators.length) / (indicators.length + 1);
     indicators.forEach(([val, lbl, col], i) => {
       const x = gap + i * (iw + gap);
