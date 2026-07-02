@@ -627,6 +627,135 @@ async function buildRecrutamento() {
     });
   }
 
+  // Cabeçalho padrão para os slides de Onboarding
+  const onbHeader = (s, title, sub) => {
+    s.addShape("rect", { x: 0, y: 0, w: 13.333, h: 0.86, fill: { color: R.navy } });
+    s.addShape("rect", { x: 0, y: 0.86, w: 13.333, h: 0.06, fill: { color: R.coral } });
+    s.addText(title, { x: 0.4, y: 0, w: 8.6, h: 0.86, fontSize: 20, bold: true, color: R.white, align: "left", valign: "middle", fontFace: FONT });
+    if (sub) s.addText(sub, { x: 9.0, y: 0, w: 2.35, h: 0.86, fontSize: 11, bold: true, color: R.coral, align: "right", valign: "middle", fontFace: FONT });
+    safeAddImage(s, AURA_W, { x: 11.95, y: 0.17, w: 0.89, h: 0.52 });
+  };
+
+  // Tabela de detalhe (Etapa | Responsável/Sistema | Atividades | Resultado)
+  const onbTable = (s, rows) => {
+    const head = ["Etapa", "Responsável / Sistema", "Atividades", "Resultado"].map(t =>
+      ({ text: t, options: { bold: true, color: R.white, fill: { color: R.navy }, valign: "middle", align: "left", fontSize: 10 } }));
+    const body = rows.map(r => [
+      { text: r[0], options: { bold: true, color: R.navy, fontSize: 9.5, valign: "middle" } },
+      { text: r[1], options: { color: R.grayDk, fontSize: 9, valign: "middle" } },
+      { text: r[2], options: { color: R.grayDk, fontSize: 8.7, valign: "middle" } },
+      { text: r[3], options: { bold: true, color: R.tealDeep, fontSize: 9, valign: "middle", fill: { color: R.greenBg } } },
+    ]);
+    s.addTable([head, ...body], {
+      x: 0.4, y: 1.12, w: 12.53, colW: [2.7, 2.0, 5.23, 2.6],
+      rowH: [0.36, 1.0, 1.0, 1.0, 1.0, 1.0],
+      border: { type: "solid", color: R.grayLt, pt: 0.75 },
+      align: "left", valign: "middle", fontFace: FONT, margin: 4, autoPage: false,
+    });
+  };
+
+  // ---------------- SLIDE 4 — ONBOARDING: VISÃO GERAL ---------------- //
+  {
+    const s = pres.addSlide();
+    s.background = { color: R.grayBg };
+    onbHeader(s, "Processo de Onboarding", "Fluxo das 10 etapas");
+
+    const onbCard = (x, y, w, num, title, resp, resultado) => {
+      const h = 1.02;
+      s.addShape("roundRect", { x, y, w, h, fill: { color: R.white }, line: noLine, rectRadius: 0.08, shadow: sh() });
+      s.addShape("rect", { x, y, w: 0.1, h, fill: { color: R.coral } });
+      chip(s, x + 0.42, y + 0.34, 0.44, num, { fill: R.navy, gcolor: R.white, gsize: 12 });
+      s.addText([
+        { text: title, options: { bold: true, fontSize: 11, color: R.navy, breakLine: true, paraSpaceAfter: 2 } },
+        { text: resp, options: { fontSize: 8.5, color: R.gray } },
+      ], { x: x + 0.72, y: y + 0.05, w: w - 0.85, h: 0.62, align: "left", valign: "top", fontFace: FONT });
+      s.addText("→  " + resultado, { x: x + 0.72, y: y + 0.67, w: w - 0.85, h: 0.3, fontSize: 8.5, bold: true, color: R.tealDeep, align: "left", valign: "middle", fontFace: FONT });
+    };
+
+    const left = [
+      [1, "Aprovação do candidato", "RH · Pandapé", "Processo admissional iniciado"],
+      [2, "Agendamento do ASO", "RH · Saúde Ocupacional", "Exame admissional agendado"],
+      [3, "Recebimento e organização da documentação", "RH", "Documentação conferida e arquivada"],
+      [4, "Checklist Pré-Admissional", "RH · 15 conferências", "Colaborador apto para a integração"],
+      [5, "Cadastro no Linx", "RH · Linx", "Admissão registrada no sistema"],
+    ];
+    const right = [
+      [6, "Assinatura Contratual", "RH · DocuSign", "Contrato formalizado e assinado"],
+      [7, "Comunicação Pré-Integração", "RH · sexta anterior", "Colaborador preparado para o 1º dia"],
+      [8, "Primeiro dia de Integração", "RH", "Integração administrativa concluída"],
+      [9, "Programa Padrinho & Jornada de Experiência", "RH · 45 dias", "Acompanhamento estruturado"],
+      [10, "Encerramento do Onboarding", "RH · Gestor", "Colaborador integrado"],
+    ];
+    const LXo = 0.45, RXo = 7.0, Wo = 5.85, y0 = 1.05, pitch = 1.16;
+    left.forEach((c, i) => onbCard(LXo, y0 + i * pitch, Wo, c[0], c[1], c[2], c[3]));
+    right.forEach((c, i) => onbCard(RXo, y0 + i * pitch, Wo, c[0], c[1], c[2], c[3]));
+    // setas verticais dentro de cada coluna
+    for (let i = 0; i < 4; i++) {
+      const ya = y0 + i * pitch + 1.02, yb = y0 + (i + 1) * pitch;
+      arrow(s, LXo + Wo / 2, ya, LXo + Wo / 2, yb, { color: R.coral, width: 1.6 });
+      arrow(s, RXo + Wo / 2, ya, RXo + Wo / 2, yb, { color: R.coral, width: 1.6 });
+    }
+    // conector 5 -> 6 (base da coluna esq. para topo da coluna dir.)
+    s.addText("continua  ▶", { x: RXo - 0.9, y: y0 - 0.02, w: 0.85, h: 0.3, fontSize: 8, italic: true, bold: true, color: R.gray, align: "right", valign: "middle", fontFace: FONT });
+  }
+
+  // ---------------- SLIDE 5 — ONBOARDING: ETAPAS 1 A 5 ---------------- //
+  {
+    const s = pres.addSlide();
+    s.background = { color: R.white };
+    onbHeader(s, "Onboarding — Etapas 1 a 5", "Documentação e admissão");
+    onbTable(s, [
+      ["1  Aprovação do candidato", "RH · Pandapé", "Movimentação do candidato para a etapa Contratação; envio automático do link para submissão da documentação obrigatória.", "Processo admissional iniciado"],
+      ["2  Agendamento do ASO", "RH · Saúde Ocupacional", "Encaminhamento dos dados do candidato: nome, cargo, centro de custo e telefone.", "Exame admissional agendado"],
+      ["3  Recebimento e organização da documentação", "RH", "Inclusão na Planilha de Controle de Admissões; recebimento e conferência dos documentos pessoais; organização do Book do Colaborador.", "Documentação conferida e arquivada"],
+      ["4  Checklist Pré-Admissional", "RH", "15 conferências (documentação, ASO, Linx, DocuSign, uniforme, crachá, ponto, benefícios, NR-22, acessos…). Detalhe no próximo slide.", "Colaborador apto para a integração"],
+      ["5  Cadastro no Linx", "RH · Linx", "Pré-requisitos: documentação completa e ASO apto.", "Admissão registrada no sistema"],
+    ]);
+  }
+
+  // ---------------- SLIDE 6 — CHECKLIST PRÉ-ADMISSIONAL ---------------- //
+  {
+    const s = pres.addSlide();
+    s.background = { color: R.grayBg };
+    onbHeader(s, "Checklist Pré-Admissional", "Etapa 4 · 15 conferências");
+    s.addText("Garante que toda a estrutura necessária para o início das atividades esteja preparada antes da integração.",
+      { x: 0.5, y: 1.02, w: 12.3, h: 0.4, fontSize: 11, italic: true, color: R.gray, align: "left", valign: "middle", fontFace: FONT });
+
+    const items = [
+      "Documentação obrigatória recebida", "ASO realizado e apto", "Cadastro efetuado no Linx",
+      "Contrato enviado via DocuSign", "Uniforme separado", "Crachá solicitado",
+      "Cadastro no relógio de ponto", "Benefícios solicitados", "Integração NR-22 programada",
+      "Guia de Integração enviado", "Rota de ônibus enviada", "Gestor comunicado sobre a data de admissão",
+      "Programa Padrinho definido", "Computador e acessos solicitados (quando aplicável)", "Estação de trabalho preparada (quando aplicável)",
+    ];
+    const cols = [0.5, 4.78, 9.06], colW = 3.95, y0 = 1.66, rp = 0.86, box = 0.28;
+    items.forEach((it, i) => {
+      const cx = cols[i % 3], cy = y0 + Math.floor(i / 3) * rp;
+      s.addShape("roundRect", { x: cx, y: cy, w: box, h: box, fill: { color: R.white }, line: { color: R.coral, width: 1.5 }, rectRadius: 0.04, shadow: sh() });
+      s.addText(it, { x: cx + 0.42, y: cy - 0.08, w: colW - 0.5, h: 0.5, fontSize: 9.5, color: R.grayDk, align: "left", valign: "middle", fontFace: FONT });
+    });
+    // resultado
+    s.addShape("roundRect", { x: 0.5, y: 6.5, w: 12.33, h: 0.6, fill: { color: R.greenBg }, line: { color: R.teal, width: 1 }, rectRadius: 0.1, shadow: sh() });
+    s.addText([
+      { text: "Resultado:  ", options: { bold: true, color: R.tealDeep } },
+      { text: "Colaborador apto para iniciar a integração.", options: { color: R.tealDeep } },
+    ], { x: 0.7, y: 6.5, w: 12.0, h: 0.6, fontSize: 12, align: "left", valign: "middle", fontFace: FONT });
+  }
+
+  // ---------------- SLIDE 7 — ONBOARDING: ETAPAS 6 A 10 ---------------- //
+  {
+    const s = pres.addSlide();
+    s.background = { color: R.white };
+    onbHeader(s, "Onboarding — Etapas 6 a 10", "Integração e acompanhamento");
+    onbTable(s, [
+      ["6  Assinatura Contratual", "RH · DocuSign", "Documentos: Contrato de Trabalho e Ficha de Registro.", "Contrato formalizado e assinado"],
+      ["7  Comunicação Pré-Integração", "RH · sexta anterior", "E-mail com Guia de Integração, local e horário, rota do ônibus, informações da NR-22 e orientações de acesso à unidade.", "Colaborador preparado para o 1º dia"],
+      ["8  Primeiro dia de Integração", "RH", "Entrega de uniforme; Integração RH: registro de ponto, benefícios, seguro de vida, adiantamento salarial e assinatura dos formulários obrigatórios.", "Integração administrativa concluída"],
+      ["9  Programa Padrinho & Jornada de Experiência", "RH · 45 dias", "Padrinho acompanha a adaptação e os treinamentos obrigatórios; Jornada de Experiência (em implantação): acompanhamento periódico, feedbacks e melhorias.", "Onboarding com acompanhamento estruturado"],
+      ["10  Encerramento do Onboarding", "RH · Gestor", "Confirmação do Programa Padrinho e dos treinamentos; reunião de acompanhamento com gestor e colaborador; registro do encerramento da jornada.", "Colaborador integrado"],
+    ]);
+  }
+
   const out = path.join(__dirname, "Fluxo_Recrutamento_Selecao.pptx");
   await pres.writeFile({ fileName: out });
   console.log("Apresentação gerada com sucesso:", out);
